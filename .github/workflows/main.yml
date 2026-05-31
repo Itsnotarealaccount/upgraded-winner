@@ -18,6 +18,10 @@ jobs:
         with:
           node-version: '20'
 
+      # DELETE ME
+      - name: Install package lock json
+        run: npm install
+        
       # If you have dependencies (like @actions/core), install them
       - name: Install dependencies (optional)
         run: npm ci   # only if you added a package.json
