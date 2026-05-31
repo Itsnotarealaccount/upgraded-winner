@@ -4,6 +4,9 @@ on:
   push:          # runs on every push
   pull_request:  # optional: also runs on PRs
 
+permissions:
+  contents: write
+
 jobs:
   analyze:
     runs-on: ubuntu-latest
@@ -39,6 +42,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
           git add language-breakdown.svg
           git diff --staged --quiet || git commit -m "Update language breakdown chart"
           git push
