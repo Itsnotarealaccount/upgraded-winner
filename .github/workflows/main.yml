@@ -1,0 +1,40 @@
+name: Analyze commit languages
+
+on:
+  push:          # runs on every push
+  pull_request:  # optional: also runs on PRs
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2   # Important: we need at least the previous commit
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # If you have dependencies (like @actions/core), install them
+      - name: Install dependencies (optional)
+        run: npm ci   # only if you added a package.json
+
+      - name: Run analysis script
+        run: node scripts/analyze-languages.js
+
+      - name: Upload SVG as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: language-chart
+          path: language-breakdown.svg
+
+      - name: (Optional) Commit SVG back to repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add language-breakdown.svg
+          git diff --staged --quiet || git commit -m "Update language breakdown chart"
+          git push
