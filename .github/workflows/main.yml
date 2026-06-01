@@ -6,7 +6,7 @@ on:
       author:
         description: GitHub username to analyze
         required: false
-        default: "neuralorchid"
+        default: ""
       max_commits:
         description: Maximum commits to inspect
         required: false
