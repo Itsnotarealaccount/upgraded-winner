@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="600" height="110">
   <rect width="100%" height="100%" fill="#f9f9f9" rx="10"/>
   <text x="20" y="30" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#333">Commit Language Breakdown</text>
-  <text x="20" y="70" font-family="monospace" font-size="14" fill="#555">YAML</text>
+  <text x="20" y="70" font-family="monospace" font-size="14" fill="#555">Text</text>
   <rect x="160" y="55" width="370" height="30" fill="#4c9aff" rx="4"/>
   <text x="540" y="70" font-family="monospace" font-size="14" fill="#333">1 files (100.0%)</text>
 </svg>
