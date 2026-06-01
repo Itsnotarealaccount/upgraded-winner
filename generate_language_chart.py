@@ -164,7 +164,9 @@ def build_svg(counts: Dict[str, int], output: str, title: str) -> None:
     cy = 400
     radius = 180
     stroke_width = 56
-    gap_deg = 4.0
+
+    # Larger gap so rounded caps do not overlap
+    gap_deg = max(18.0, math.degrees((stroke_width / radius) * 1.25))
 
     left_x = 620
     top_y = 180
@@ -198,11 +200,6 @@ def build_svg(counts: Dict[str, int], output: str, title: str) -> None:
       }
       .legend-row {
         opacity: 0;
-        animation: fadeUp 0.45s ease forwards;
-      }
-      @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(8px); }
-        to { opacity: 1; transform: translateY(0); }
       }
     ]]></style>
   </defs>
@@ -219,7 +216,8 @@ def build_svg(counts: Dict[str, int], output: str, title: str) -> None:
     start_angle = -90.0
     for idx, (language, value) in enumerate(items):
         color = color_for_index(idx)
-        available = 360.0 - gap_deg * len(items)
+
+        available = max(1.0, 360.0 - gap_deg * len(items))
         raw_span = max(1.0, available * (value / total))
 
         seg_start = start_angle + gap_deg / 2.0
@@ -238,33 +236,39 @@ def build_svg(counts: Dict[str, int], output: str, title: str) -> None:
             f'  <animate attributeName="stroke-dashoffset" from="{arc_len:.2f}" to="0" '
             f'dur="0.9s" begin="{delay:.2f}s" fill="freeze" />'
         )
-        svg.append(
-            f'  <animate attributeName="opacity" from="0" to="1" '
-            f'dur="0.12s" begin="{delay:.2f}s" fill="freeze" />'
-        )
         svg.append("</path>")
 
         start_angle = seg_end + gap_deg / 2.0
 
-    total_percent = 100.0
     for idx, (language, value) in enumerate(items):
-        pct = (value / total) * total_percent
+        pct = (value / total) * 100.0
         y = top_y + idx * row_h
         color = color_for_index(idx)
+        begin = 0.18 + idx * 0.07
 
         svg.append(
-            f'<g class="legend-row" transform="translate({left_x},{y})" style="animation-delay:{0.18 + idx * 0.07:.2f}s">'
+            f'<g class="legend-row" transform="translate({left_x},{y})">'
         )
-        svg.append(f'  <rect x="0" y="0" width="18" height="18" rx="6" ry="6" fill="{color}" />')
-        svg.append(f'  <text x="30" y="16" class="label">{escape(language)}</text>')
-        svg.append(f'  <text x="250" y="16" class="value">{pct:.1f}%</text>')
+        svg.append(
+            f'  <animate attributeName="opacity" from="0" to="1" '
+            f'dur="0.25s" begin="{begin:.2f}s" fill="freeze" />'
+        )
+        svg.append(
+            f'  <rect x="0" y="0" width="18" height="18" rx="6" ry="6" fill="{color}" />'
+        )
+        svg.append(
+            f'  <text x="30" y="16" class="label">{escape(language)}</text>'
+        )
+        svg.append(
+            f'  <text x="250" y="16" class="value">{pct:.1f}%</text>'
+        )
         svg.append("</g>")
 
     svg.append("</svg>")
 
     with open(output, "w", encoding="utf-8") as f:
         f.write("\n".join(svg))
-
+        
 
 def main() -> None:
     default_owner, default_repo = repo_parts()
