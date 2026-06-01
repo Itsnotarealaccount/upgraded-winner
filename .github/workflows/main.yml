@@ -1,48 +1,45 @@
-name: Analyze commit languages
+name: Commit language donut
 
 on:
-  push:          # runs on every push
-  pull_request:  # optional: also runs on PRs
+  workflow_dispatch:
+    inputs:
+      author:
+        description: GitHub username to analyze
+        required: false
+        default: "neuralorchid"
+      max_commits:
+        description: Maximum commits to inspect
+        required: false
+        default: "200"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  analyze:
+  build-chart:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
-          fetch-depth: 2   # Important: we need at least the previous commit
+          fetch-depth: 1
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: '20'
+          python-version: "3.11"
 
-      # DELETE ME
-      - name: Install package lock json
-        run: npm install
-        
-      # If you have dependencies (like @actions/core), install them
-      - name: Install dependencies (optional)
-        run: npm ci   # only if you added a package.json
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
-      - name: Run analysis script
-        run: node scripts/analyze-languages.js
+      - name: Generate SVG
+        run: python generate_language_chart.py --output language-donut.svg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          AUTHOR: ${{ inputs.author || github.actor }}
+          MAX_COMMITS: ${{ inputs.max_commits }}
 
-      - name: Upload SVG as artifact
+      - name: Upload SVG artifact
         uses: actions/upload-artifact@v4
         with:
-          name: language-chart
-          path: language-breakdown.svg
-
-      - name: (Optional) Commit SVG back to repo
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git add language-breakdown.svg
-          git diff --staged --quiet || git commit -m "Update language breakdown chart"
-          git push
+          name: language-donut
+          path: language-donut.svg
